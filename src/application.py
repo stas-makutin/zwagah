@@ -8,9 +8,9 @@ class WebHandler(tornado.web.RequestHandler):
         self.write("Hello, world : " + query)
   
 class Application:
-    _svc_name_ = "testsvc"
-    _svc_display_name_ = "Test Service"
-    _svc_description_ = "Test Python service with HTTP server in it."
+    _svc_name_ = "zwagah"
+    _svc_display_name_ = "ZWaGaH Service"
+    _svc_description_ = "Z-Wave HTTP Gateway service."
     _svc_log_backup_count_ = 3
     _svc_log_max_bytes_ = 10 * 1024 * 1024
     

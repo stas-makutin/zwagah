@@ -2,7 +2,7 @@ import argparse
 import platform
 import application
 
-argParser = argparse.ArgumentParser(description='Test Python Service.')
+argParser = argparse.ArgumentParser(description=application.Application._svc_description_)
 argParser.add_argument('-i', '--install', action='store_true', help='Install as service')
 argParser.add_argument('-u', '--uninstall', action='store_true', help='Uninstall service')
 argParser.add_argument('-s', '--start', action='store_true', help='Start service')
