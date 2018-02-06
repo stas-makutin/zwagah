@@ -1,6 +1,7 @@
 import argparse
 import platform
 import application
+import config
 
 argParser = argparse.ArgumentParser(description=application.Application._svc_description_)
 argParser.add_argument('-i', '--install', action='store_true', help='Install as service')
@@ -11,7 +12,12 @@ argParser.add_argument('-r', '--restart', action='store_true', help='Restart ser
 argParser.add_argument('--status', action='store_true', help='Print service status')
 argParser.add_argument('--console', action='store_true', help='Run as terminal application')
 
-args = argParser.parse_args();
+config.Config.registerArguments(argParser)
+
+args = argParser.parse_args()
+
+config.Config.processArguments(args)
+
 isWindows = platform.system() == "Windows"
 
 if args.console:

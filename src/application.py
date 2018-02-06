@@ -14,6 +14,12 @@ class Application:
     _svc_log_backup_count_ = 3
     _svc_log_max_bytes_ = 10 * 1024 * 1024
     
+    @staticmethod
+    def __getLogDir():
+        moduleDir = os.path.dirname(WindowsService.__getModuleFile())
+        return os.path.join(moduleDir, "../log")
+    
+    
     def __init__(self, logger, logFile):
         tornado.ioloop.IOLoop.configure('tornado.platform.asyncio.AsyncIOLoop')
         self.__app = tornado.web.Application([

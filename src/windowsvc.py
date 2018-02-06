@@ -10,6 +10,7 @@ import win32service
 import win32serviceutil
 import servicemanager
 import application
+import config
 
 class WindowsService(win32serviceutil.ServiceFramework):
     _svc_name_ = application.Application._svc_name_
@@ -20,8 +21,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
     
     @staticmethod
     def __getLogDir():
-        moduleDir = os.path.dirname(WindowsService.__getModuleFile())
-        return os.path.join(moduleDir, "log")
+        return config.Config.getLogDir()
     
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)

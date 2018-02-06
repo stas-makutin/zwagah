@@ -1,10 +1,12 @@
 from sys import modules, executable
 import sys
 import os.path
+import errno
 import signal
 import logging
 import threading
 import application
+import config
 
 class AppThread(threading.Thread):
     def __init__(self, logger, logFile):
@@ -29,13 +31,6 @@ class AppThread(threading.Thread):
         if self.app is not None:
             self.app.stop()
 
-def getModuleFile():
-    try:
-        moduleFile = modules[AppThread.__module__].__file__
-    except AttributeError:
-        moduleFile = executable
-    return os.path.abspath(moduleFile)
-
 def signalHandler(signal_number, stack_frame):
     del signal_number, stack_frame
     global appThread
@@ -54,7 +49,12 @@ def run():
     lh.setFormatter(lf)
     log.addHandler(lh)
     
-    logDir = os.path.dirname(getModuleFile())
+    logDir = config.Config.getLogDir()
+    try:
+        os.makedirs(logDir)
+    except OSError as err:
+        if err.errno != errno.EEXIST:
+            raise
     logFile = os.path.join(logDir, f"{application.Application._svc_name_}.log")
     lh = logging.FileHandler(filename=logFile, encoding="utf-8");
     lh.setFormatter(lf)
