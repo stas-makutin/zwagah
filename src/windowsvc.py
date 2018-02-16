@@ -1,5 +1,5 @@
 from sys import modules, executable
-import sys
+import traceback
 import os.path
 import errno
 import logging
@@ -21,7 +21,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
     
     @staticmethod
     def __getLogDir():
-        return config.Config.getLogDir()
+        return config.ConfigManager.getLogDir()
     
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -59,9 +59,9 @@ class WindowsService(win32serviceutil.ServiceFramework):
         lh.namer = namer
         lh.setFormatter(logging.Formatter('%(asctime)s %(levelno)s %(message)s'))
         
-        log = logging.getLogger(self._svc_name_);
+        log = logging.getLogger(self._svc_name_)
         log.propagate = False
-        log.setLevel(logging.INFO);
+        log.setLevel(logging.INFO)
         log.addHandler(lh)
         
         log.info(f"{self._svc_name_} started")
@@ -75,7 +75,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
             self.__app = application.Application(log, logFile)
             self.__app.run()
         except:
-            log.error(f"{self._svc_name_} failed:\n{sys.exc_info()}", )
+            log.error(f"{self._svc_name_} failed:\n{traceback.format_exc()}", )
         
         log.info(f"{self._svc_name_} stopped")
         servicemanager.LogMsg(
@@ -92,7 +92,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
         except win32api.error as details:
             if details.winerror not in [winerror.ERROR_SERVICE_DOES_NOT_EXIST, winerror.ERROR_INVALID_NAME]:
                 raise
-        return state;
+        return state
     
     @staticmethod
     def __getModuleFile():
@@ -104,13 +104,13 @@ class WindowsService(win32serviceutil.ServiceFramework):
 
     @classmethod
     def Install(cls):
-        state = cls.__CurrentState();
+        state = cls.__CurrentState()
         if state is not None:
             print("Service %s installed already." % cls._svc_name_)
             return
         
         modulePath = WindowsService.__getModuleFile()
-        classString = os.path.splitext(modulePath)[0] + '.' + cls.__name__;
+        classString = os.path.splitext(modulePath)[0] + '.' + cls.__name__
         
         win32serviceutil.InstallService(
             pythonClassString = classString,
@@ -123,7 +123,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
 
     @classmethod
     def Uninstall(cls):
-        state = cls.__CurrentState();
+        state = cls.__CurrentState()
         if state is None:
             print("Service %s is not installed." % cls._svc_name_)
             return
@@ -136,7 +136,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
 
     @classmethod
     def Start(cls):
-        state = cls.__CurrentState();
+        state = cls.__CurrentState()
         if state is None:
             print("Service %s is not installed." % cls._svc_name_)
             return
@@ -162,7 +162,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
 
     @classmethod
     def Stop(cls):
-        state = cls.__CurrentState();
+        state = cls.__CurrentState()
         if state is None:
             print("Service %s is not installed." % cls._svc_name_)
             return
@@ -174,7 +174,7 @@ class WindowsService(win32serviceutil.ServiceFramework):
 
     @classmethod
     def Status(cls):
-        state = cls.__CurrentState();
+        state = cls.__CurrentState()
         if state is None:
             print("Service %s is not installed." % cls._svc_name_)
         elif state == win32service.SERVICE_RUNNING:

@@ -6,6 +6,7 @@ import pwd
 import grp
 import errno
 import sys
+import traceback
 import shutil
 import stat
 import time
@@ -148,9 +149,9 @@ class NixService():
         if cls._svc_user_:
             try:
                 user = pwd.getpwnam(cls._svc_user_)
-                uid = user.pw_uid;
+                uid = user.pw_uid
                 if gid is None:
-                    gid = user.pw_gid;
+                    gid = user.pw_gid
             except KeyError:
                 pass
         return (uid, gid)
@@ -174,7 +175,7 @@ class NixService():
         userCreated = False
         if success and uid is None and cls._svc_user_:
             success = False
-            cmd = ["useradd", "--system", cls._svc_user_];
+            cmd = ["useradd", "--system", cls._svc_user_]
             if gid is not None:
                 cmd.append("--gid")
                 cmd.append(str(gid))
@@ -182,7 +183,7 @@ class NixService():
                 user = pwd.getpwnam(cls._svc_user_)
                 uid = user.pw_uid
                 if gid is None:
-                    gid = user.pw_gid;
+                    gid = user.pw_gid
                 userCreated = success = True
 
         if uid is None:
@@ -411,10 +412,10 @@ esac
         if _gid is None:
             _gid = os.getgid()
             
-        self.__MakeLockDir(_uid, _gid);
-        self.__MakeLogDir(_uid, _gid);
+        self.__MakeLockDir(_uid, _gid)
+        self.__MakeLogDir(_uid, _gid)
         
-        log = logging.getLogger(self._svc_name_);
+        log = logging.getLogger(self._svc_name_)
         log.propagate = False
         lh = None
         if os.path.exists(self._logrotate_file_):
@@ -440,7 +441,7 @@ esac
             lh.namer = namer
             
         lh.setFormatter(logging.Formatter('%(asctime)s %(levelno)s %(message)s'))
-        log.setLevel(logging.INFO);
+        log.setLevel(logging.INFO)
         log.addHandler(lh)
         
         context = daemon.DaemonContext(
@@ -462,7 +463,7 @@ esac
                 __app = application.Application(log, self._log_file_)
                 __app.run()
             except:
-                print(sys.exc_info())
-                log.error(f"{self._svc_name_} failed:\n{sys.exc_info()}", )
+                print(traceback.format_exc())
+                log.error(f"{self._svc_name_} failed:\n{traceback.format_exc()}")
             log.info(f"{self._svc_name_} stopped")
             print("Stopped")

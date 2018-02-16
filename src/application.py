@@ -2,6 +2,9 @@ import tornado.ioloop
 import tornado.web
 import threading
 import logging
+import config
+import webapi
+import webconfig
     
 class WebHandler(tornado.web.RequestHandler):
     def get(self, query):
@@ -14,22 +17,29 @@ class Application:
     _svc_log_backup_count_ = 3
     _svc_log_max_bytes_ = 10 * 1024 * 1024
     
-    @staticmethod
-    def __getLogDir():
-        moduleDir = os.path.dirname(WindowsService.__getModuleFile())
-        return os.path.join(moduleDir, "../log")
-    
-    
     def __init__(self, logger, logFile):
+        self._logger = logger
+        self._logFile = logFile
+        
         tornado.ioloop.IOLoop.configure('tornado.platform.asyncio.AsyncIOLoop')
-        self.__app = tornado.web.Application([
-            (r"/(.*)", WebHandler),
-        ])
-        self.__app.listen(8888)
-        logger.info("Test!")
         tornado.log.access_log.setLevel("ERROR")
+        
+        
+        
+        
     
     def run(self):
+        self._config = config.ConfigManager.load(self._logger)
+        self._app = tornado.web.Application(
+            [
+                (r"/api/(.*)", webapi.WebHandler),
+                (r"/config(.*)", webconfig.WebHandler),
+                (r"/(.*)", tornado.web.StaticFileHandler, {"path" : self._config.webDir if self._config.webDir else config.ConfigManager.getDefaultWebDir()})
+            ]
+        )
+        self._app.listen(self._config.httpPort)
+        self._logger.info("Test!")
+        
         tornado.ioloop.IOLoop.current().start()
 
     def stop(self):

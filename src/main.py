@@ -12,11 +12,11 @@ argParser.add_argument('-r', '--restart', action='store_true', help='Restart ser
 argParser.add_argument('--status', action='store_true', help='Print service status')
 argParser.add_argument('--console', action='store_true', help='Run as terminal application')
 
-config.Config.registerArguments(argParser)
+config.ConfigManager.registerArguments(argParser)
 
 args = argParser.parse_args()
 
-config.Config.processArguments(args)
+config.ConfigManager.processArguments(args)
 
 isWindows = platform.system() == "Windows"
 

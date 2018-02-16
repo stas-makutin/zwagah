@@ -1,5 +1,5 @@
 from sys import modules, executable
-import sys
+import traceback
 import os.path
 import errno
 import signal
@@ -23,7 +23,7 @@ class AppThread(threading.Thread):
             self.app = application.Application(self.logger, self.logFile)
             self.app.run()
         except:
-            self.logger.error(f"{application.Application._svc_name_} failed:\n{sys.exc_info()}", )
+            self.logger.error(f"{application.Application._svc_name_} failed:\n{traceback.format_exc()}", )
         self.logger.info(f"{application.Application._svc_name_} stopped")
         self.stoppedEvent.set()
     
@@ -39,9 +39,9 @@ def signalHandler(signal_number, stack_frame):
 def run():
     global appThread
     
-    log = logging.getLogger(application.Application._svc_name_);
+    log = logging.getLogger(application.Application._svc_name_)
     log.propagate = False
-    log.setLevel(logging.INFO);
+    log.setLevel(logging.INFO)
     
     lf = logging.Formatter('%(asctime)s %(levelno)s %(message)s')
     
@@ -49,14 +49,14 @@ def run():
     lh.setFormatter(lf)
     log.addHandler(lh)
     
-    logDir = config.Config.getLogDir()
+    logDir = config.ConfigManager.getLogDir()
     try:
         os.makedirs(logDir)
     except OSError as err:
         if err.errno != errno.EEXIST:
             raise
     logFile = os.path.join(logDir, f"{application.Application._svc_name_}.log")
-    lh = logging.FileHandler(filename=logFile, encoding="utf-8");
+    lh = logging.FileHandler(filename=logFile, encoding="utf-8")
     lh.setFormatter(lf)
     log.addHandler(lh)
     
