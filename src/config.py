@@ -4,27 +4,34 @@ import os.path
 import json
 import logging
 
+class ConfigEntry(object):
+    def __init__(self, name, default, convert, isDefault, isValid, isDifferent):
+        self._name = name
+        self.default = default
+        self._convert = convert
+        self._isDefault = isDefault
+        self._isValid = isValid
+        self._isDifferent = isDifferent
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return instance.__dict__[self._name] 
+    def __set__(self, instance, value):
+        instance.__dict__[self._name] = self._convert(value)
+    def isDefault(self, value):
+        return self._isDefault(self._convert(value))
+    def isValid(self, value):
+        return self._isValid(self._convert(value))
+    def isDifferent(self, value1, value2):
+        return self._isDifferent(self._convert(value1), self._convert(value2))
+
 class Config:
-    _default_httpPort = 8888
+    httpPort = ConfigEntry("httpPort", 8888, lambda x: None if x is None else x, lambda x: x == Config.httpPort.default, lambda x: x is not None and x > 0 and x < 65536, lambda x,y: x != y)
+    webDir = ConfigEntry("webDir", "", lambda x: x, lambda x: x == Config.webDir.default, lambda x: isinstance(x, str), lambda x,y: x != y)
     
     def __init__(self):
-        self.httpPort = self._default_httpPort
-        self.webDir = ""
-    
-    @property
-    def httpPort(self): return self._httpPort
-    @httpPort.setter
-    def httpPort(self, value): self._httpPort = value
-    @staticmethod
-    def httpPortValid(value): return value is not None and value > 0 and value < 65536
-    
-    @property
-    def webDir(self): return self._webDir
-    @webDir.setter
-    def webDir(self, value): self._webDir = value
-    @staticmethod
-    def webDirValid(value): return isinstance(value, str)
-    
+        self.httpPort = Config.httpPort.default
+        self.webDir = Config.webDir.default
 
 class ConfigManager:
     _config_file_ = "zwagah"
@@ -39,8 +46,8 @@ class ConfigManager:
                 with open(configFile, "r", encoding="utf-8") as cf:
                     data = json.load(cf)
                 
-                cls.testAndAssign(config, int(data.get('httpPort',0)), lambda v: Config.httpPortValid(v), lambda c, v: setattr(c, 'httpPort', v))
-                cls.testAndAssign(config, data.get('webDir', None), lambda v: Config.webDirValid(v), lambda c, v: setattr(c, 'webDir', v))
+                cls.testAndSet(config, data.get('httpPort', 0), Config.httpPort)
+                cls.testAndSet(config, data.get('webDir', None), Config.webDir)
                                 
             except OSError:
                 logger.error(f"Unable to open configuration file {configFile}:\n{traceback.format_exc()}")
@@ -52,21 +59,22 @@ class ConfigManager:
     def save(cls, config, logger):
         data = {}
         
-        data['httpPort'] = config.httpPort
-        data['webDir'] = config.webDir
+        cls.dumpIfNotDefault(config, Config.httpPort, data, "httpPort", lambda x: x)
+        cls.dumpIfNotDefault(config, Config.webDir, data, "webDir", lambda x: x)
         
-        configFile = cls.getConfigFile()
-        try:
-            with open(configFile, "w", encoding="utf-8") as cf:
-                json.dump(data, cf, indent=4)
-        except OSError:
-            logger.error(f"Unable to open configuration file {configFile}:\n{traceback.format_exc()}")
-        except:
-            logger.error(f"Unable to save JSON configuration file {configFile}:\n{traceback.format_exc()}")
+        if data:
+            configFile = cls.getConfigFile()
+            try:
+                with open(configFile, "w", encoding="utf-8") as cf:
+                    json.dump(data, cf, indent=4)
+            except OSError:
+                logger.error(f"Unable to open configuration file {configFile}:\n{traceback.format_exc()}")
+            except:
+                logger.error(f"Unable to save JSON configuration file {configFile}:\n{traceback.format_exc()}")
 
     @staticmethod
     def registerArguments(argParser):
-        argParser.add_argument('-p', '--port', action='store', type=int, help=f"HTTP port, default is {Config._default_httpPort}")
+        argParser.add_argument('-p', '--port', action='store', type=int, help=f"HTTP port, default is {Config.httpPort.default}")
 
     @staticmethod
     def processArguments(args):
@@ -79,25 +87,33 @@ class ConfigManager:
         config = None 
         modified = False
         
-        config, modified = ConfigManager.loadAndAssign(config, modified, log, args, 
-                                lambda a: Config.httpPortValid(a.port), lambda c, a: c.httpPort != a.port, lambda c, a: setattr(c, 'httpPort', a.port) )
+        config, modified = ConfigManager.loadAndSet(config, modified, log, args.port, Config.httpPort) 
         
         if config is not None and modified:
             ConfigManager.save(config, log)
         log.removeHandler(lh)
 
     @staticmethod
-    def testAndAssign(config, value, validate, assign):
-        if validate(value):
-            assign(config, value)
+    def dumpIfNotDefault(config, entry, dict, name, convert):
+        value = entry.__get__(config, Config);
+        if not entry.isDefault(value):
+            dict[name] = convert(value)
+        
+        if entry.isValid(value):
+            entry.__set__(config, value)
 
     @staticmethod
-    def loadAndAssign(config, modified, logger, args, validate, difference, assign):
-        if validate(args):
+    def testAndSet(config, value, entry):
+        if entry.isValid(value):
+            entry.__set__(config, value)
+
+    @staticmethod
+    def loadAndSet(config, modified, logger, value, entry):
+        if entry.isValid(value):
             if config is None:
                 config = ConfigManager.load(logger)
-            if difference(config, args):
-                assign(config, args)
+            if entry.isDifferent(entry.__get__(config, Config), value):
+                entry.__set__(config, value)
                 modified = True
         return [config, modified]
 
@@ -112,6 +128,10 @@ class ConfigManager:
     @staticmethod
     def getBaseDir():
         return os.path.dirname(ConfigManager.__getModuleFile())
+
+    @staticmethod
+    def getWebDir(config):
+        return config.webDir if config.webDir else ConfigManager.getDefaultWebDir()
 
     @staticmethod
     def getDefaultWebDir():
