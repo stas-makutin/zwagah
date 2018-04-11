@@ -1,8 +1,10 @@
 from sys import modules, executable
 import traceback
+import os
 import os.path
 import json
 import logging
+import security
 
 class ConfigEntry(object):
     def __init__(self, name, default, convert, isDefault, isValid, isDifferent):
@@ -32,6 +34,7 @@ class Config:
     def __init__(self):
         self.httpPort = Config.httpPort.default
         self.webDir = Config.webDir.default
+        self.users = security.Users()
 
 class ConfigManager:
     _config_file_ = "zwagah"
@@ -46,8 +49,14 @@ class ConfigManager:
                 with open(configFile, "r", encoding="utf-8") as cf:
                     data = json.load(cf)
                 
-                cls.testAndSet(config, data.get('httpPort', 0), Config.httpPort)
-                cls.testAndSet(config, data.get('webDir', None), Config.webDir)
+                cls.testAndSet(config, data.get("httpPort", 0), Config.httpPort)
+                cls.testAndSet(config, data.get("webDir", None), Config.webDir)
+                
+                securitySection = data.get("security", None)
+                if securitySection is not None:
+                    usersSection = data.get("users", None)
+                    if usersSection is not None:
+                        config.users = security.Users.load(usersSection)
                                 
             except OSError:
                 logger.error(f"Unable to open configuration file {configFile}:\n{traceback.format_exc()}")
@@ -62,15 +71,22 @@ class ConfigManager:
         cls.dumpIfNotDefault(config, Config.httpPort, data, "httpPort", lambda x: x)
         cls.dumpIfNotDefault(config, Config.webDir, data, "webDir", lambda x: x)
         
-        if data:
-            configFile = cls.getConfigFile()
-            try:
+        userSection = security.Users.save(config.users)
+        if userSection:
+            data["security"]["users"] = userSection
+        
+        configFile = cls.getConfigFile()
+        try:
+            if data:
                 with open(configFile, "w", encoding="utf-8") as cf:
                     json.dump(data, cf, indent=4)
-            except OSError:
-                logger.error(f"Unable to open configuration file {configFile}:\n{traceback.format_exc()}")
-            except:
-                logger.error(f"Unable to save JSON configuration file {configFile}:\n{traceback.format_exc()}")
+            else:
+                os.remove(configFile)
+                
+        except OSError:
+            logger.error(f"Unable to open configuration file {configFile}:\n{traceback.format_exc()}")
+        except:
+            logger.error(f"Unable to save JSON configuration file {configFile}:\n{traceback.format_exc()}")
 
     @staticmethod
     def registerArguments(argParser):
@@ -136,6 +152,10 @@ class ConfigManager:
     @staticmethod
     def getDefaultWebDir():
         return os.path.join(ConfigManager.getBaseDir(), "../www")
+
+    @staticmethod
+    def getAppWebDir():
+        return os.path.join(ConfigManager.getBaseDir(), "www")
 
     @staticmethod
     def getConfigDir():

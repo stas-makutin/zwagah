@@ -3,8 +3,8 @@ import tornado.web
 import threading
 import logging
 import config
+import security
 import webapi
-import webconfig
     
 class Application:
     _svc_name_ = "zwagah"
@@ -17,6 +17,7 @@ class Application:
         self._logger = logger
         self._logFile = logFile
         self._config = None
+        self._authentication = security.Authentication()
         self._runEvent = threading.Event()
         
         self._runEvent.set()
@@ -29,8 +30,9 @@ class Application:
             self._config = config.ConfigManager.load(self._logger)
             self._tornado = tornado.web.Application(
                 [
-                    (r"/api/(.*)", webapi.WebHandler, dict(app=self)),
-                    (r"/config(.*)", webconfig.WebHandler),
+                    (r"/api/(.*)", webapi.HttpApiHandler, dict(app=self)),
+                    (r"/api/(.*)", webapi.WebSocketApiHandler, dict(app=self)),
+                    (r"/app/(.*)", tornado.web.StaticFileHandler, {"path" : config.ConfigManager.getAppWebDir()}),
                     (r"/(.*)", tornado.web.StaticFileHandler, {"path" : config.ConfigManager.getWebDir(self._config), "default_filename" : "index.htm"})
                 ]
             )

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ZWagaH</title>
+	<link href="style.css" rel="stylesheet">
+	<script type="text/javascript" src="api.js"></script>
+	<script type="text/javascript" src="app.js"></script>
+</head>
+<body onload="zwaLoad()">
+
+	<template id="template-loader">
+		<section id="loader" class="display-none">
+			<div></div><div></div><div></div>
+		</section>
+	</template>
+
+	<template id="template-header">
+		<section id="header">
+			<header>ZWagaH</header>
+			<div>Name</div>
+			<div></div>
+		</section>
+		
+		<section id="error-icon" class="display-none">+</section>
+		
+		<section id="error-box" class="display-none">
+			<header>Title<a>x</a></header>
+			<pre>Message</pre>
+		</section>
+	</template>
+	
+	<template id="template-void">
+		<section id="void">
+			<header>Wow, look at all these stars!</header>
+		</section>
+	</template>
+
+	<template id="template-setup">
+		<section id="setup">
+			<header>Please enter the password for <b>admin</b> user:</header>
+			<form>
+				<div>User name:</div>
+				<input name="username" type="text" autocomplete="username" value="admin" disabled><span class=".check-light-off"></span>
+				<div>New password:</div>
+				<input name="password" type="password" autocomplete="new-password"><span></span>
+				<div>Confirm new password:</div>
+				<input name="password-confirm" type="password" autocomplete="new-password"><span></span>
+				<div></div>
+				<input name="submit" type="submit" value="OK">
+			</form>
+			<i>Password Rule</i>
+		</section>
+	</template>
+
+	<template id="template-config">
+	</template>
+	
+</body>
+</html>
