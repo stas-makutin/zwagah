@@ -216,17 +216,17 @@ function zwaLoad() {
 	var query = parseQueryString();
 	let sequence = [];
 	if ("setup" in query) {
-		sequence.push(() => { renderTemplate("template-header", {"div" : "Setup"}); });
+		sequence.push(() => { renderTemplate("template-header", {".name" : "Setup"}); });
 		sequence.push(() => { initialize(); });
-		sequence.push(() => { renderTemplate("template-setup", {"i" : passwordRule}); });
+		sequence.push(() => { renderTemplate("template-setup", {".passwordRule" : passwordRule}); });
 		sequence.push(() => { runSetup(query); });
 	} else if ("config" in query) {
-		sequence.push(() => { renderTemplate("template-header", {"div" : "Configuration"}); });
+		sequence.push(() => { renderTemplate("template-header", {".name" : "Configuration"}); });
 		sequence.push(() => { initialize(); });
 		sequence.push(() => { renderTemplate("template-config"); });
 		sequence.push(() => { runConfig(query); });
 	} else {
-		sequence.push(() => { renderTemplate("template-header", {"div" : "Void"}); });
+		sequence.push(() => { renderTemplate("template-header", {".name" : "Void"}); });
 		sequence.push(() => { renderTemplate("template-void"); });
 	}
 	
