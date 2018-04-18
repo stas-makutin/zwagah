@@ -1,4 +1,5 @@
-body { font:14px Tahoma; background-color:white; color:black; margin:0; text-align:center; }
+body { font:14px Tahoma; background-color:white; color:black; margin:0; text-align:center; min-width:400px; min-height:500px; }
+input,select { background-color:white; height:1.5em; }
 
 /* shared styles */
 .waiting { cursor: progress; }
@@ -10,6 +11,9 @@ body { font:14px Tahoma; background-color:white; color:black; margin:0; text-ali
 .display-none { display: none; }
 .display-inbl { display: inline-block; }
 .display-blck { display: block; }
+.active-tab { z-index: 10; opacity: .999; background-color: white; padding:0.3em 1.2em 0.41em 1.2em; }
+.inactive-tab { padding:0.3em 1em 0.3em 1em; background-color: whitesmoke; }
+.buttons-line { margin-top:0.8em; width:100%; text-align:center; }
 
 @keyframes spin { 
 	0% { transform: rotate(0deg); }
@@ -18,21 +22,18 @@ body { font:14px Tahoma; background-color:white; color:black; margin:0; text-ali
 
 /* loader section */
 #loader { position:fixed; z-index:100; top:0; left:0; width:100vw; height:100vh; opacity: .99; }
-#loader div { width:100%; height:100%; background-color:floralwhite; opacity: .5; }
+#loader div { width:100%; height:100%; background-color:floralwhite; opacity: .2; }
 #loader div + div { opacity: 1; position:fixed; top: calc(50vh - 3em); left: calc(50vw - 3em); width: 6em; height: 6em; border-radius: 50%; border: 0.8em solid whitesmoke; border-top: 0.8em solid forestgreen; border-bottom: 0.8em solid forestgreen; animation: spin 1s linear alternate infinite; }
 #loader div + div + div { opacity: 1; position:fixed; top: calc(50vh - 2em); left: calc(50vw - 2em); width: 4em; height: 4em; border-radius: 50%; border: 0.7em solid whitesmoke; border-right: 0.7em solid darkolivegreen; border-left: 0.7em solid darkolivegreen; animation: spin 1s linear alternate-reverse infinite; }
 
 /* header styles */
-#header { 
-	width:100%; height: 3em;
-	background:
-		left 0% top 50% / auto no-repeat url('logo.png'),
-		linear-gradient(to right, forestgreen, limegreen)
-	;
-	background-color:green;
-	margin-bottom: 0.6em;
-}
-#header header { color: transparent; float:left; }
+#header { width:100%; height: 3em; background: linear-gradient(to right, forestgreen, limegreen); background-color:green; margin-bottom: 0.6em; }
+#header header { position:fixed; font-size:.65em; color:khaki; }
+#header header nav { line-height: 2em; font-size:1.45em; }
+#header header b:first-of-type { color:khaki; font-size:2em; vertical-align:bottom; }
+#header header b + b { color:tomato; font-size:1.6em; vertical-align:middle; }
+#header header b + b + b { color:cornsilk; font-size:1.4em; }
+#header header b + b + b + b { color:khaki; font-size:2em; vertical-align:bottom; }
 #header div:first-of-type { color: lightyellow; font-weight:bold; font-size:1.4em; text-align:center; width:100%; padding-top: 0.4em; }
 #header div + div { color: lightyellow; float:right; margin-right: 0.6em; margin-top: 0.2em; text-align:right; position: absolute; top: 0; right: 0 }
 #header div + div a { display:block; color: lightyellow; }
@@ -51,16 +52,32 @@ body { font:14px Tahoma; background-color:white; color:black; margin:0; text-ali
 #setup { max-width: 30em; min-width:20em; margin:auto; text-align:center; }
 #setup header { margin-bottom:1em; }
 #setup form { display:inline-block; width:90%; }
-#setup div { text-align:left; margin-top:0.3em; }
+#setup label { display:block; text-align:left; margin-top:0.3em; }
 #setup i { display:block; margin-top:0.3em; }
-#setup input[type="password"],input[type="text"] { width:calc(100% - 1.5em); height:1.5em; }
+#setup input[type="password"],input[type="text"] { width:calc(100% - 1.5em); }
 #setup span { display:inline-block; height: 1.6em; width:0.5em; margin-left:0.3em; vertical-align:middle; border:0.1px solid darkgrey; }
-#setup input[type="submit"] { width:6em; height:2em; text-align:center; }
+#setup input[type="submit"] { margin-top:1em; width:6em; height:2em; text-align:center; }
 
 /* config page styles */
-#config { text-align: left; margin:0 0.8em 0.2em 0.6em; }
-#config nav { display:inline-block; border-top:0.11em solid darkgrey; border-right:0.11em solid darkgrey; border-radius: 0.5em 0.5em 0 0;  }
+#config { font-size:1.1em; min-width:26em; max-width:100%; width:50em; margin:auto; text-align:center; }
+#config nav { display:inline-block; font-size:1.1em; border-top:0.11em solid darkgrey; border-right:0.11em solid darkgrey; border-radius: 0.5em 0.5em 0 0;  }
 #config nav:first-of-type { border-left:0.11em solid darkgrey; }
-#config section { min-height: calc(100vh - 6.5em); min-width:100%; border:0.11em solid darkgrey; margin-top:-0.11em; }
-.active-tab { z-index: 10; opacity: .999; background-color: white; padding:0.3em 1em 0.41em 1em; }
-.inactive-tab { padding:0.3em 1em 0.3em 1em; background-color: lightgrey; }
+#config section { text-align:left; border:0.11em solid darkgrey; margin:-0.11em 0.5em 0.5em 0.5em; padding:0.5em; white-space:nowrap; }
+#config label { display:block; text-align:left; margin:0.3em 0.9em 0 0; white-space:nowrap; }
+#config fieldset { border-left:0.1em solid darkgrey; margin-bottom:0.3em; }
+#config input[type="submit"] { width:6em; height:2em; }
+#config-general input[name="wwwport"] { width:6em; }
+#config-general input[name="wwwroot"] { margin-right:0.3em; }
+#config-general input[name="wwwroot-browse"] { width: 1.95em; height:1.95em; }
+#config-users fieldset { display:inline-block; height: 65vh; vertical-align: top; }
+#config-users fieldset:first-of-type { width:30%; }
+#config-users fieldset + fieldset { width:calc(70% - 4em); }
+#config-users fieldset + fieldset fieldset { width: 100%!important; height:calc(65vh - 15em); margin-top:0.5em; }
+#config-users select[name="userList"] { height:calc(100% - 1em); width:100%; }
+#config-users input[type="checkbox"] { margin-top:0.5em; }
+#config-users input[type="password"],input[type="text"] { width:calc(100% - 1.5em); min-width:0; }
+#config-users span { display:inline-block; height: 1.6em; width:0.5em; margin-left:0.3em; vertical-align:middle; border:0.1px solid darkgrey; }
+#config-users input[name="string"] { display:block; width:calc(100% - 0.3em); }
+#config-users select[name="stringList"] { height:calc(100% - 6em); width:100%; }
+#config-users input[type="button"] { max-width:6em; min-width:5em; width:5vw; height:2em; margin-left:0.5vw; }
+#config-users fieldset + fieldset fieldset input[type="button"] { min-width:3em; }

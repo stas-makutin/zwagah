@@ -17,8 +17,8 @@
 
 	<template id="template-header">
 		<section id="header">
-			<header>ZWagaH</header>
-			<div class="name">Name</div>
+			<header><nav><b>Z</b><b>W</b><b>aga</b><b>H</b></nav>Home Automation</header>
+			<div class="title">Name</div>
 			<div></div>
 		</section>
 		
@@ -40,13 +40,12 @@
 		<section id="setup">
 			<header>Please enter the password for <b>admin</b> user:</header>
 			<form>
-				<div>User name:</div>
+				<label>User name:</label>
 				<input name="username" type="text" autocomplete="username" value="admin" disabled><span class="check-light-off"></span>
-				<div>New password:</div>
+				<label>New password:</label>
 				<input name="password" type="password" autocomplete="new-password"><span></span>
-				<div>Confirm new password:</div>
+				<label>Confirm new password:</label>
 				<input name="password-confirm" type="password" autocomplete="new-password"><span></span>
-				<div></div>
 				<input name="submit" type="submit" value="OK">
 			</form>
 			<i class="passwordRule">Password Rule</i>
@@ -54,6 +53,66 @@
 	</template>
 
 	<template id="template-config">
+		<section id="config">
+			<nav class="active-tab">General</nav><nav class="inactive-tab">Users</nav>
+			<section id="config-general">
+				<form>
+					<fieldset>
+						<legend>Controller</legend>
+						<label>Serial port:
+							<select name="comPort">
+								<option>COM1</option>
+							</select>
+						</label>						
+					</fieldset>
+					<fieldset>
+						<legend>Web Server</legend>
+						<label>Port: <input name="wwwport" type="number" value="8888" min="1" max="65535"></label>
+						<label>Root directory:<br>
+						<input name="wwwroot" type="text" value="path"><input name="wwwroot-browse" type="button" value="..."></label>
+					</fieldset>
+					<div class="buttons-line">
+						<input type="submit" value="OK">
+					</div>
+				</form>
+			</section>
+			<section id="config-users" class="display-none">
+				<form>
+					<fieldset>
+						<legend>Users</legend>
+						<select name="userList" multiple>
+							<option>admin</option>
+						</select>
+					</fieldset><fieldset>
+						<legend>User Properties</legend>
+						<label>User name:</label>
+						<input name="username" type="text" autocomplete="username" value="admin" disabled><span class="check-light-ok"></span>
+						<label>New password:</label>
+						<input name="password" type="password" autocomplete="new-password"><span></span>
+						<label>Confirm new password:</label>
+						<input name="password-confirm" type="password" autocomplete="new-password"><span></span>
+						<label><input name="admin-privilege" type="checkbox" value="admin">Administrator<label>
+						<fieldset>
+							<legend>Associated Strings</legend>
+							<input name="string" type="text" value="priv">
+							<select name="stringList" multiple>
+								<option>string</option>
+							</select>
+							<div class="buttons-line">
+								<input name="string-add" type="button" value="Add">
+								<input name="string-modify" type="button" value="Modify">
+								<input name="string-delete" type="button" value="Delete">
+							</div>
+						</fieldset>
+					</fieldset>
+					<div class="buttons-line">
+						<input name="user-add" type="button" value="Add">
+						<input name="user-modify" type="button" value="Modify">
+						<input name="user-delete" type="button" value="Delete">
+					</div>
+				</form>
+			</section>
+		</section>
 	</template>
 	
 </body>
