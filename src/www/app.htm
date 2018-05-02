@@ -19,7 +19,7 @@
 		<section id="header">
 			<header><nav><b>Z</b><b>W</b><b>aga</b><b>H</b></nav>Home Automation</header>
 			<div class="title">Name</div>
-			<div></div>
+			<div class="display-none"><span>user</span><a href="javascript:logout();">[Log Out]</a></div>
 		</section>
 		
 		<section id="error-icon" class="display-none">+</section>
@@ -48,31 +48,44 @@
 				<input name="password-confirm" type="password" autocomplete="new-password"><span></span>
 				<input name="submit" type="submit" value="OK">
 			</form>
-			<i class="passwordRule">Password Rule</i>
+			<i class="password-rule">Password Rule</i>
 		</section>
 	</template>
 
+	<template id="template-login">
+		<section id="login">
+			<header>Please enter user name and password:</header>
+			<form>
+				<label>User name:</label>
+				<input name="username" type="text" autocomplete="username"><span></span>
+				<label>User password:</label>
+				<input name="password" type="password" autocomplete="current-password"><span></span>
+				<label><input name="keepUserIn" type="checkbox" value="keepUserIn">Remember me.</label>
+				<input name="submit" type="submit" value="OK">
+			</form>
+		</section>
+	</template>
+	
 	<template id="template-config">
 		<section id="config">
-			<nav class="active-tab">General</nav><nav class="inactive-tab">Users</nav>
+			<nav class="active-tab" tabindex="0">General</nav><nav class="inactive-tab" tabindex="0">Users</nav>
 			<section id="config-general">
 				<form>
 					<fieldset>
 						<legend>Controller</legend>
 						<label>Serial port:
 							<select name="comPort">
-								<option>COM1</option>
 							</select>
 						</label>						
 					</fieldset>
 					<fieldset>
 						<legend>Web Server</legend>
-						<label>Port: <input name="wwwport" type="number" value="8888" min="1" max="65535"></label>
+						<label>Port: <input name="wwwport" type="number" value="" min="1" max="65535"></label>
 						<label>Root directory:<br>
-						<input name="wwwroot" type="text" value="path"><input name="wwwroot-browse" type="button" value="..."></label>
+						<input name="wwwroot" type="text" value=""><input name="wwwroot-browse" type="button" value="..."></label>
 					</fieldset>
 					<div class="buttons-line">
-						<input type="submit" value="OK">
+						<input name="general-submit" type="submit" value="OK">
 					</div>
 				</form>
 			</section>
@@ -86,12 +99,13 @@
 					</fieldset><fieldset>
 						<legend>User Properties</legend>
 						<label>User name:</label>
-						<input name="username" type="text" autocomplete="username" value="admin" disabled><span class="check-light-ok"></span>
+						<input name="username" type="text" autocomplete="username" value="admin"><span></span>
 						<label>New password:</label>
 						<input name="password" type="password" autocomplete="new-password"><span></span>
 						<label>Confirm new password:</label>
 						<input name="password-confirm" type="password" autocomplete="new-password"><span></span>
-						<label><input name="admin-privilege" type="checkbox" value="admin">Administrator<label>
+						<div class="password-rule">Password Rule</div>
+						<label><input name="admin-privilege" type="checkbox" value="admin">Administrator</label>
 						<fieldset>
 							<legend>Associated Strings</legend>
 							<input name="string" type="text" value="priv">

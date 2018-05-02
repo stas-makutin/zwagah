@@ -12,18 +12,139 @@ function ZwagahError(message) {
 }
 ZwagahError.prototype = new Error;
 
+/* Zwagah User class */
+
+function ZwagahUser(name = "", token = null) {
+	this.name = name;
+	this.token = token;
+}
+
+/* Zwagah Login helper */
+
+const zwagahLoginUserName = "zwagahUser";
+const zwagahLoginUserPassword = "zwagahUserKey";
+const zwagahLoginUserToken = "zwagahToken";
+
+function ZwagahLogin() {
+}
+
+ZwagahLogin.getUserName = function() {
+	return window.localStorage.getItem(zwagahLoginUserName);
+}
+
+ZwagahLogin.setUserName = function(name) {
+	window.localStorage.setItem(zwagahLoginUserName, name);
+}
+
+ZwagahLogin.getPassword = function() {
+	let value = window.sessionStorage.getItem(zwagahLoginUserPassword);
+	if (!value)
+		value = window.localStorage.getItem(zwagahLoginUserPassword);
+	return value;
+}
+
+ZwagahLogin.setPassword = function(value, sessionOnly = true) {
+	if (sessionOnly) {
+		window.sessionStorage.setItem(zwagahLoginUserPassword, value);
+		window.localStorage.removeItem(zwagahLoginUserPassword);
+	} else {
+		window.localStorage.setItem(zwagahLoginUserPassword, value);
+		window.sessionStorage.removeItem(zwagahLoginUserPassword);
+	}
+}
+
+ZwagahLogin.getToken = function() {
+	return window.sessionStorage.getItem(zwagahLoginUserToken);
+}
+
+ZwagahLogin.setToken = function(token) {
+	window.sessionStorage.setItem(zwagahLoginUserToken, token);
+}
+
+ZwagahLogin.reset = function() {
+	window.localStorage.removeItem(zwagahLoginUserPassword);
+	window.sessionStorage.removeItem(zwagahLoginUserPassword);
+	window.sessionStorage.removeItem(zwagahLoginUserToken);
+}
+
+ZwagahLogin.login = function(loginUrl, goUrl = null) {
+//	return new ZwagahUser("testuser", null);
+	
+	let userName = ZwagahLogin.getUserName();
+	let token = ZwagahLogin.getToken();
+	if (userName && token) {
+		return new ZwagahUser(userName, token);
+	}
+	
+	let password = ZwagahLogin.getPassword();
+	if (userName && password) {
+		new ZwagahApi()
+			.login(userName, password, true)
+			.then(result => {
+				ZwagahLogin.setToken(result.token);
+				return new ZwagahUser(userName, token);
+			})
+			.catch(error => {
+				// fall back to login page
+			})
+		;
+	}		
+	
+	if (!loginUrl)
+		loginUrl = "/";
+	if (goUrl) {
+		loginUrl += (loginUrl.lastIndexOf("?") >= 0) ? "&go=" : "?go=";
+		loginUrl += encodeURIComponent(goUrl);
+	}
+	window.location.replace(loginUrl);
+	return null;
+}
+
+ZwagahLogin.logout = function(goUrl = null) {
+	ZwagahLogin.reset();
+	if (!goUrl)
+		goUrl = "/";
+	window.location.replace(goUrl);
+}
+
 /* Zwagah API class */
 
 function ZwagahApi() {
 }
 
 ZwagahApi.prototype.setup = function(adminPassword) {
-	return new Promise(function(resolve, reject) {
+	return new Promise((resolve, reject) => {
 		setTimeout(function() { reject(new ZwagahError(`
 		Error!
 multiline
 			error!
 		`)); }, 2000);
+	});
+}
+
+ZwagahApi.prototype.login = function(userName, userPassword, isPasswordSalted = false) {
+	return new Promise((resolve, reject) => {
+		resolve({"token":"...","passKey":"..."});
+		//setTimeout(() =>{ reject(new ZwagahError("Unknown user or wrong password.")); }, 1500);
+	});
+}
+	
+ZwagahApi.prototype.getConfig = function(userToken)	{
+	return new Promise((resolve, reject) => {
+		let mock = {
+			"controller" : {
+				"comPorts" : [
+					{ "port" : "COM1" },
+					{ "port" : "COM2" },
+					{ "port" : "COM3", "current" : true }
+				]
+			},
+			"httpServer" : {
+				"port" : 8888,
+				"wwwRootDirectory" : "/opt/zwagah/www/"
+			}
+		};
+		setTimeout(() => { resolve(mock); }, 2000);
 	});
 }
 

@@ -14,6 +14,7 @@ input,select { background-color:white; height:1.5em; }
 .active-tab { z-index: 10; opacity: .999; background-color: white; padding:0.3em 1.2em 0.41em 1.2em; }
 .inactive-tab { padding:0.3em 1em 0.3em 1em; background-color: whitesmoke; }
 .buttons-line { margin-top:0.8em; width:100%; text-align:center; }
+.password-rule { white-space: normal; font-style: italic; }
 
 @keyframes spin { 
 	0% { transform: rotate(0deg); }
@@ -28,7 +29,7 @@ input,select { background-color:white; height:1.5em; }
 
 /* header styles */
 #header { width:100%; height: 3em; background: linear-gradient(to right, forestgreen, limegreen); background-color:green; margin-bottom: 0.6em; }
-#header header { position:fixed; font-size:.65em; color:khaki; }
+#header header { position:absolute; font-size:.65em; color:khaki; }
 #header header nav { line-height: 2em; font-size:1.45em; }
 #header header b:first-of-type { color:khaki; font-size:2em; vertical-align:bottom; }
 #header header b + b { color:tomato; font-size:1.6em; vertical-align:middle; }
@@ -58,9 +59,19 @@ input,select { background-color:white; height:1.5em; }
 #setup span { display:inline-block; height: 1.6em; width:0.5em; margin-left:0.3em; vertical-align:middle; border:0.1px solid darkgrey; }
 #setup input[type="submit"] { margin-top:1em; width:6em; height:2em; text-align:center; }
 
+/* login page styles */
+#login { max-width: 30em; min-width:20em; margin:auto; text-align:center; }
+#login header { margin-bottom:1em; }
+#login form { display:inline-block; width:90%; }
+#login label { display:block; text-align:left; margin-top:0.3em; }
+#login input[type="password"],input[type="text"] { width:calc(100% - 1.5em); }
+#login input[type="checkbox"] { vertical-align:middle; }
+#login span { display:inline-block; height: 1.6em; width:0.5em; margin-left:0.3em; vertical-align:middle; border:0.1px solid darkgrey; }
+#login input[type="submit"] { margin-top:1em; width:6em; height:2em; text-align:center; }
+
 /* config page styles */
 #config { font-size:1.1em; min-width:26em; max-width:100%; width:50em; margin:auto; text-align:center; }
-#config nav { display:inline-block; font-size:1.1em; border-top:0.11em solid darkgrey; border-right:0.11em solid darkgrey; border-radius: 0.5em 0.5em 0 0;  }
+#config nav { display:inline-block; font-size:1.1em; border-top:0.11em solid darkgrey; border-right:0.11em solid darkgrey; border-radius: 0.5em 0.5em 0 0; cursor: pointer;  }
 #config nav:first-of-type { border-left:0.11em solid darkgrey; }
 #config section { text-align:left; border:0.11em solid darkgrey; margin:-0.11em 0.5em 0.5em 0.5em; padding:0.5em; white-space:nowrap; }
 #config label { display:block; text-align:left; margin:0.3em 0.9em 0 0; white-space:nowrap; }
@@ -69,10 +80,10 @@ input,select { background-color:white; height:1.5em; }
 #config-general input[name="wwwport"] { width:6em; }
 #config-general input[name="wwwroot"] { margin-right:0.3em; }
 #config-general input[name="wwwroot-browse"] { width: 1.95em; height:1.95em; }
-#config-users fieldset { display:inline-block; height: 65vh; vertical-align: top; }
+#config-users fieldset { display:inline-block; height: 75vh; vertical-align: top; }
 #config-users fieldset:first-of-type { width:30%; }
 #config-users fieldset + fieldset { width:calc(70% - 4em); }
-#config-users fieldset + fieldset fieldset { width: 100%!important; height:calc(65vh - 15em); margin-top:0.5em; }
+#config-users fieldset + fieldset fieldset { width:calc(100% - 2em)!important; height:calc(100% - 18em); margin-top:0.5em; }
 #config-users select[name="userList"] { height:calc(100% - 1em); width:100%; }
 #config-users input[type="checkbox"] { margin-top:0.5em; }
 #config-users input[type="password"],input[type="text"] { width:calc(100% - 1.5em); min-width:0; }
