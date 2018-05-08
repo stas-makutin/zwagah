@@ -89,9 +89,10 @@ function getElements(...ids) {
 	return getElementsWithBase(document, ...ids);
 }
 
-function cancelEvent(e, preventDefault = true) {
-	e.stopPropagation();
-	if (preventDefault) e.preventDefault();
+function removeOptions(element) {
+	if (element && element.length && element.remove) {
+		while (element.length > 0) element.remove(0);
+	}
 }
 
 const passwordRule = "Password must be at least 6 characters long and contain at least 3 unique characters.";
@@ -126,29 +127,27 @@ function initialize() {
 	const [elErrorBoxHeader] = getElementsWithBase(elErrorBox, "header,t0");
 	
 	elErrorIcon.addEventListener("click", e => {
-		cancelEvent(e);
+		e.preventDefault();
 		elErrorIcon.className = "display-none";
 		elErrorBox.className = "display-inbl";
 	});
 	elErrorBoxHeader.addEventListener("click", e => {
-		cancelEvent(e);
+		e.preventDefault();
 		elErrorIcon.className = "display-blck";
 		elErrorBox.className = "display-none";
 	});
 }
 
-function showUser(userName) {
+function showUser(userName, show = true) {
 	const [elHeader] = getElements("header");
 	const [elUserArea,elUserName] = getElementsWithBase(elHeader, "div,t1", "span,t0");
-	elUserName.innerHTML = escapeHtml(userName);
-	elUserArea.className = "display-blck";
-}
-
-function hideUser(userName) {
-	const [elHeader] = getElements("header");
-	const [elUserArea,elUserName] = getElementsWithBase(elHeader, "div,t1", "span,t0");
-	elUserName.innerHTML = "";
-	elUserArea.className = "display-none";
+	if (show) {
+		elUserName.innerHTML = escapeHtml(userName);
+		elUserArea.className = "display-blck";
+	} else {
+		elUserName.innerHTML = "";
+		elUserArea.className = "display-none";
+	}
 }
 
 //const urlLogin = "/app/app.htm?login";
@@ -193,6 +192,69 @@ function hideError() {
 	elErrorIcon.className = elErrorBox.className = "display-none";
 }
 
+let onDropListClose = null;
+
+function showDropList(populate, close, ...boundElements) {
+	const [elDropList] = getElements("drop-list");
+	
+	if (elDropList.className !== "display-none")
+		return false;
+	
+	onDropListClose = close;
+	
+	["click", "keydown", "resize"].forEach(type => { window.addEventListener(type, hideDropList) });
+	
+	let rect = {top: null, left: null, width: null, height: null};
+	for (var i = 0; i< boundElements.length; i++) {
+		let r = boundElements[i].getBoundingClientRect();
+		if (rect.top === null || rect.top < r.bottom)
+			rect.top = r.bottom;
+		if (rect.left === null || rect.left > r.left)
+			rect.left = r.left;
+		let w = r.right - rect.left;
+		if (rect.width === null || rect.width < w)
+			rect.width = w;
+	}
+	
+	rect = populate(elDropList, rect);
+	
+	if (rect.left !== null)
+		elDropList.style.left = (window.pageXOffset + rect.left) + "px";
+	if (rect.top !== null)
+		elDropList.style.top = (window.pageYOffset + rect.top) + "px";
+	if (rect.width !== null)
+		elDropList.style.width = rect.width + "px";
+	if (rect.height !== null)
+		elDropList.style.height = rect.height + "px";
+	elDropList.className = "display-blck";
+	
+	return true;
+}
+
+function hideDropList(event = null) {
+	const [elDropList] = getElements("drop-list");
+	
+	if (elDropList.className === "display-none")
+		return false;
+	
+	if (event !== null) {
+		event.stopPropagation();
+		event.preventDefault();
+	}
+	
+	elDropList.className = "display-none";
+	elDropList.innerHTML = "";
+	
+	["click", "keydown", "resize"].forEach(type => { window.removeEventListener(type, hideDropList) });
+	
+	if (onDropListClose !== null) {
+		onDropListClose();
+		onDropListClose = null;
+	}
+	
+	return true;
+}
+
 function runSetup(query) {
 	const [elPassword, elPasswordConfirm, elSubmit] = getElements("password,0", "password-confirm,0", "submit,0");
 	const [elPasswordLight, elPasswordConfirmLight] = [elPassword.nextSibling, elPasswordConfirm.nextSibling];
@@ -220,7 +282,7 @@ function runSetup(query) {
 	}
 
 	elSubmit.addEventListener("click", e => {
-		cancelEvent(e);
+		e.preventDefault();
 		let password = elPassword.value;
 		if (isPasswordValid(password)) {
 			document.body.className = "waiting";
@@ -290,7 +352,7 @@ function runLogin(query) {
 	testInput(null);
 	
 	elSubmit.addEventListener("click", e => {
-		cancelEvent(e);
+		e.preventDefault();
 		let userName = elUser.value;
 		let password = elPassword.value;
 		if (userName && password) {
@@ -338,6 +400,45 @@ function runConfig(query) {
 	
 	// general page behavior
 	const [elComPort, elWwwPort, elWwwRoot, elWwwRootBtn, elOkBtn] = getElementsWithBase(elTabs[0], "comPort,0", "wwwport,0", "wwwroot,0", "wwwroot-browse,0", "general-submit,0");
+	
+	elWwwRootBtn.addEventListener("click", e => {
+		e.stopPropagation();
+		e.preventDefault();
+		if (!hideDropList()) {
+			elWwwRootBtn.value = "x";
+			showDropList(
+				(elDropList, rect) => {
+					elDropList.innerHTML = "Test<br>Test";
+					rect.width -= parseFloat(getComputedStyle(elWwwRootBtn).fontSize) * 0.8;
+					return rect;
+				}, 
+				() => {
+					elWwwRootBtn.value = "...";
+				},
+				elWwwRoot, elWwwRootBtn
+			);
+		}
+	});
+	
+	elOkBtn.addEventListener("click", e => {
+		e.preventDefault();
+		showLoader(true);
+		let params = {};
+		params["controller.comPort"] = elComPort.selectedOptions[0].value;
+		params["httpServer.port"] = elWwwPort.value;
+		params["httpServer.wwwRootDirectory"] = elWwwRoot.value;
+		new ZwagahApi()
+			.setConfig(currentUser.token, params)
+			.then(res => {
+				elOkBtn.className = "button-off";
+				pageModified = false;
+				showLoader(false);
+			})
+			.catch(error => {
+				showError("Unable to save the configuration", error.message);
+				showLoader(false);
+			})
+	});
 
 	pageLoaders.push(() => {
 		new ZwagahApi()
@@ -346,7 +447,8 @@ function runConfig(query) {
 				if (res.controller.comPorts) {
 					for (let port of res.controller.comPorts) {
 						let opt = document.createElement("option");
-						opt.text = opt.value = port.port;
+						opt.value = port.port;
+						opt.text = port.label ? port.label : port.port;
 						opt.selected = port.current == true;
 						elComPort.add(opt);
 					}
@@ -356,19 +458,22 @@ function runConfig(query) {
 					elWwwRoot.value = res.httpServer.wwwRootDirectory;
 				}
 				elComPort.disabled = elWwwPort.disabled = elWwwRoot.disabled = elWwwRootBtn.disabled = false;
-				elWwwRootBtn.className = "button-on";
+				elWwwRootBtn.className = elOkBtn.className = "button-on";
 				showLoader(false);
 			})
 			.catch(error => {
+				showError("Unable to get the configuration", error.message);
 				showLoader(false);
 			})
 		;
 	});
-
+	
 	pageUnloaders.push(() => {
+		removeOptions(elComPort);
+		elWwwPort.value = 0;
+		elWwwRoot.value = "";
 		elComPort.disabled = elWwwPort.disabled = elWwwRoot.disabled = elWwwRootBtn.disabled = elOkBtn.disabled = true;
-		elOkBtn.className = "button-off";
-		pageModified = false;
+		elWwwRootBtn.className = elOkBtn.className = "button-off";
 	});
 	
 	[elComPort, elWwwPort, elWwwRoot, elWwwRootBtn].forEach( el => el.addEventListener("input", e=> {
@@ -396,37 +501,41 @@ function runConfig(query) {
 	for (let i = 0; i < elPages.length; i++) {
 		let elTab = elTabs[i], elPage = elPages[i];
 		let index = i;
-		if (i == activePage) {
+		if (index == activePage) {
 			elTab.className = "active-tab";
 			elPage.className = "";
 		} else {
 			elTab.className = "inactive-tab";
 			elPage.className = "display-none";
+			pageUnloaders[index]();
 		}
 		
 		["click", "keyup"].forEach( ev => elTab.addEventListener(ev, e => {
-			cancelEvent(e);
+			e.preventDefault();
 			if (e instanceof KeyboardEvent) {
 				if (!(e.keyCode == 0xd || e.keyCode == 0x20)) return;
 			}
 			
 			if (activePage != index) {
+				if (pageModified && !confirm("Changes you made may not be saved. Do you want to continue?")) {
+					return;
+				}
+				showLoader(true);
+				hideError();
+				pageModified = false;
+				pageUnloaders[activePage]();
 				elTabs[activePage].className = "inactive-tab";
 				elPages[activePage].className = "display-none";
 				elTab.className = "active-tab";
 				elPage.className = "";
 				activePage = index;
+				pageLoaders[activePage]();
 			}
 		}));	
 	}
 	
-	// page loading
-	
-	
-	if (0 == activePage) {
-	} else if (1 == activePage) {
-		
-	}
+	// active page loading
+	pageLoaders[activePage]();
 }
 
 function zwaLoad() {
@@ -450,6 +559,7 @@ function zwaLoad() {
 	} else if ("config" in query) {
 		sequence.push(() => { renderTemplate("template-header", {".title" : "Configuration"}); });
 		sequence.push(() => { initialize(); });
+		sequence.push(() => { renderTemplate("template-drop-list") });
 		sequence.push(() => { renderTemplate("template-config", {".password-rule" : passwordRule}); });
 		sequence.push(() => { runConfig(query); });
 	} else {

@@ -136,7 +136,8 @@ ZwagahApi.prototype.getConfig = function(userToken)	{
 				"comPorts" : [
 					{ "port" : "COM1" },
 					{ "port" : "COM2" },
-					{ "port" : "COM3", "current" : true }
+					{ "port" : "COM3", "current" : true },
+					{ "port" : "USB1", "label" : "USB-to-Serial" },
 				]
 			},
 			"httpServer" : {
@@ -148,3 +149,36 @@ ZwagahApi.prototype.getConfig = function(userToken)	{
 	});
 }
 
+ZwagahApi.prototype.setConfig = function(userToken, configParams) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => { resolve({ "status" : 0, "message" : "OK", "httpServer.port" : 8888 }); }, 2000);
+	});
+}
+
+ZwagahApi.prototype.listDirectory = function(userToken, currentPath) {
+	return new Promise((resolve, reject) => {
+		let mock = [];
+		if (currentPath === "/") {
+			mock = [
+				"bin",
+				"etc",
+				"opt",
+				"var"
+			];
+		} else if (currentPath === "/opt" || currentPath === "/opt/") {
+			mock = [
+				"apache",
+				"zwagah",
+				"puppet"
+			];
+		} else if (currentPath === "/opt/zwagah" || currentPath === "/opt/zwagah/") {
+			mock = [
+				"bin",
+				"etc",
+				"www",
+				"src"
+			];
+		}
+		setTimeout(() => { resolve(mock); }, 1500);
+	});
+}
