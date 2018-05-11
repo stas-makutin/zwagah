@@ -263,7 +263,11 @@ function hideDropDiv(event = null) {
 		return false;
 	
 	if (event !== null) {
-		if ((event.type == "keydown" && event.key != "Escape") || ifParentOf(event.target, elDropList)) {
+		let escape = event.type == "keydown" && event.key == "Escape";
+		if (ifParentOf(event.target, elDropList)) {
+			if (!escape)
+				return;
+		} else if (!escape) {
 			return;
 		}
 		event.stopPropagation();
