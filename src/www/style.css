@@ -21,6 +21,11 @@ input,select { background-color:white; height:1.5em; }
 	100% { transform: rotate(360deg); }
 }
 
+@keyframes expand { 
+	0% { letter-spacing: 2em; }
+	100% { letter-spacing: -0.1em; }
+}
+
 /* loader styles */
 #loader { position:fixed; z-index:100; top:0; left:0; width:100vw; height:100vh; opacity: .99; }
 #loader div { width:100%; height:100%; background-color:floralwhite; opacity: .2; }
@@ -28,7 +33,10 @@ input,select { background-color:white; height:1.5em; }
 #loader div + div + div { opacity: 1; position:fixed; top: calc(50vh - 2em); left: calc(50vw - 2em); width: 4em; height: 4em; border-radius: 50%; border: 0.7em solid whitesmoke; border-right: 0.7em solid darkolivegreen; border-left: 0.7em solid darkolivegreen; animation: spin 1s linear alternate-reverse infinite; }
 
 /* drop-list styles */
-#drop-list { position:absolute; max-height:80%; padding:.3em; overflow:auto; border:0.1em green solid; background-color: #dfffdf; z-index:5555; }
+#drop-list { position:absolute; padding:0; margin:0; border:0.1em green solid; background-color: #efffef; z-index:5555; }
+#drop-list div { animation: expand 1s linear alternate infinite; font-weight:bold; padding-bottom: 0.6em; }
+#drop-list span { display:block; padding: 0.5em; background-color:mistyrose; }
+#drop-list select { width:100%; font:1.1em Monospace; background-color: #efffef; border: none; overflow:auto; }
 
 /* header styles */
 #header { width:100%; height: 3em; background: linear-gradient(to right, forestgreen, limegreen); background-color:green; margin-bottom: 0.6em; }
@@ -82,7 +90,7 @@ input,select { background-color:white; height:1.5em; }
 #config input[type="submit"] { width:6em; height:2em; }
 #config-general input[name="wwwport"] { width:6em; }
 #config-general input[name="wwwroot"] { margin-right:0.3em; }
-#config-general input[name="wwwroot-browse"] { width: 1.95em; height:1.95em; }
+#config-general input[name="wwwroot-browse"] { width: 1.95em; height:2.05em; }
 #config-users fieldset { display:inline-block; height: 75vh; vertical-align: top; }
 #config-users fieldset:first-of-type { width:30%; }
 #config-users fieldset + fieldset { width:calc(70% - 4em); }

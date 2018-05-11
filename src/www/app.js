@@ -1,5 +1,20 @@
-function escapeHtml(src) {
-	return src.replace(/[&<>"']/g, function(m) { return {'&':'&amp;','<': '&lt;','>': '&gt;'}[m]; });
+function cancelablePromise(promise) {
+	let cancel;
+	const cancelPromise = new Promise((resolve, reject) => {
+		cancel = reject.bind(null, { cancelled : true });
+	});
+	return Object.assign(Promise.race([promise, cancelPromise]), { cancel });
+}
+
+function escapeHtml(src, mode = 0) {
+	const map = {"&" : "&amp;", "<": "&lt;", ">": "&gt;", "'": "&apos;", '"' : "&quot;"};
+	if (1 == mode)
+		return src.replace(/[&<>"]/g, function(m) { return map[m]; });
+	if (2 == mode)
+		return src.replace(/[&<>']/g, function(m) { return map[m]; });
+	if (3 == mode)
+		return src.replace(/[&<>"']/g, function(m) { return map[m]; });
+	return src.replace(/[&<>]/g, function(m) { return map[m]; });
 }
 
 function parseQueryString() {
@@ -40,6 +55,16 @@ function renderTemplate(templateId, params = null, target = null) {
 		target.appendChild(template);
 	else
 		document.body.appendChild(template);
+}
+
+function ifParentOf(element, parent) {
+	while (element) {
+		let p = element.parentNode;
+		if (p === parent)
+			return true;
+		element = p;
+	}
+	return false;
 }
 
 function getElementsWithBase(base, ...ids) {
@@ -194,7 +219,7 @@ function hideError() {
 
 let onDropListClose = null;
 
-function showDropList(populate, close, ...boundElements) {
+function showDropDiv(populate, close, ...boundElements) {
 	const [elDropList] = getElements("drop-list");
 	
 	if (elDropList.className !== "display-none")
@@ -202,7 +227,7 @@ function showDropList(populate, close, ...boundElements) {
 	
 	onDropListClose = close;
 	
-	["click", "keydown", "resize"].forEach(type => { window.addEventListener(type, hideDropList) });
+	["click", "keydown", "resize"].forEach(type => { window.addEventListener(type, hideDropDiv) });
 	
 	let rect = {top: null, left: null, width: null, height: null};
 	for (var i = 0; i< boundElements.length; i++) {
@@ -231,13 +256,16 @@ function showDropList(populate, close, ...boundElements) {
 	return true;
 }
 
-function hideDropList(event = null) {
+function hideDropDiv(event = null) {
 	const [elDropList] = getElements("drop-list");
 	
 	if (elDropList.className === "display-none")
 		return false;
 	
 	if (event !== null) {
+		if ((event.type == "keydown" && event.key != "Escape") || ifParentOf(event.target, elDropList)) {
+			return;
+		}
 		event.stopPropagation();
 		event.preventDefault();
 	}
@@ -245,7 +273,7 @@ function hideDropList(event = null) {
 	elDropList.className = "display-none";
 	elDropList.innerHTML = "";
 	
-	["click", "keydown", "resize"].forEach(type => { window.removeEventListener(type, hideDropList) });
+	["click", "keydown", "resize"].forEach(type => { window.removeEventListener(type, hideDropDiv) });
 	
 	if (onDropListClose !== null) {
 		onDropListClose();
@@ -253,6 +281,75 @@ function hideDropList(event = null) {
 	}
 	
 	return true;
+}
+
+function toggleDropList(adjustSize, init, populate, select, close, ...boundElements) {
+	if (hideDropDiv()) {
+		return false;
+	}
+	
+	return showDropDiv(
+		(elDropList, rect) => {
+			rect = adjustSize(elDropList, rect);
+
+			const loadingContent = "<div>.....</div>";
+			let count = 0;
+			let content = "";
+			
+			let append = (value, text, last, error = null) => {
+				if (error) {
+					elDropList.innerHTML = `<span>${escapeHtml(error)}</span>`;
+				}
+				if (text) {
+					count++;
+					if (value)
+						content += `<option value="${escapeHtml(value, 1)}">${escapeHtml(text)}</option>`;
+					else
+						content += `<option>${escapeHtml(text)}</option>`;
+				}
+				if (last) {
+					const fontSize = parseFloat(getComputedStyle(elDropList).fontSize) * 1.1;
+					const minHeight = 3 * fontSize;
+					const maxHeight = (window.innerHeight - rect.top - rect.height) * 0.95;
+					let height = count * 1.265 * fontSize; 
+					if (height > maxHeight)
+						height = maxHeight;
+					if (height < minHeight)
+						height = minHeight;
+					elDropList.innerHTML = `<select size="${count}" style="height:${height}px;">${content}</select>`;
+			
+					const [elSelect] = getElementsWithBase(elDropList, "select,t0");
+					elSelect.focus();
+					if (count > 0) {
+						elSelect.selectedIndex = 0;
+					}
+					["click", "keyup"].forEach(type => { elSelect.addEventListener(type, e => {
+						if (e.type == "keyup") {
+							if (e.key != "Enter" && e.key != " ")
+								return;
+						}
+						event.stopPropagation();
+						event.preventDefault();
+						if (elSelect.selectedIndex >= 0) {
+							content = '';
+							count = 0;
+							if (select(elSelect.selectedOptions[0].value, elSelect.selectedOptions[0].text, append)) {
+								elDropList.innerHTML = loadingContent;
+							}
+						}
+					})});
+				}
+			};
+
+			elDropList.innerHTML = loadingContent;
+			init();
+			populate(append);
+			
+			return rect;
+		},
+		close,
+		...boundElements
+	);
 }
 
 function runSetup(query) {
@@ -404,20 +501,31 @@ function runConfig(query) {
 	elWwwRootBtn.addEventListener("click", e => {
 		e.stopPropagation();
 		e.preventDefault();
-		if (!hideDropList()) {
-			elWwwRootBtn.value = "x";
-			showDropList(
-				(elDropList, rect) => {
-					elDropList.innerHTML = "Test<br>Test";
-					rect.width -= parseFloat(getComputedStyle(elWwwRootBtn).fontSize) * 0.8;
-					return rect;
-				}, 
-				() => {
-					elWwwRootBtn.value = "...";
-				},
-				elWwwRoot, elWwwRootBtn
-			);
-		}
+		let promise = null;
+		let init = () => {
+			promise = cancelablePromise(new ZwagahApi().listDirectory(currentUser.token, elWwwRoot.value));
+		};
+		let populate = (report) => {
+			if (promise) promise
+				.then(res => { for (let entry of res) report(entry[0], entry[1], false); report(null, null, true); })
+				.catch(error => { if (!error.cancelled) report(null, null, false, error.message); })
+			;
+		};
+		toggleDropList(
+			(elDropList, rect) => { rect.width -= parseFloat(getComputedStyle(elWwwRootBtn).fontSize) * 0.2; return rect; },
+			init, populate,
+			(value, text, report) => {
+				elWwwRoot.value = value;
+				init();
+				populate(report);
+				return true;
+			},
+			() => {
+				if (promise) promise.cancel();
+				elWwwRootBtn.value = "...";
+			},
+			elWwwRoot, elWwwRootBtn
+		);
 	});
 	
 	elOkBtn.addEventListener("click", e => {

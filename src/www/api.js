@@ -142,10 +142,10 @@ ZwagahApi.prototype.getConfig = function(userToken)	{
 			},
 			"httpServer" : {
 				"port" : 8888,
-				"wwwRootDirectory" : "/opt/zwagah/www/"
+				"wwwRootDirectory" : "/opt/zwagah/"
 			}
 		};
-		setTimeout(() => { resolve(mock); }, 2000);
+		setTimeout(() => { resolve(mock); }, 500);
 	});
 }
 
@@ -157,26 +157,40 @@ ZwagahApi.prototype.setConfig = function(userToken, configParams) {
 
 ZwagahApi.prototype.listDirectory = function(userToken, currentPath) {
 	return new Promise((resolve, reject) => {
+		if (currentPath === "error") {
+			reject(new ZwagahError("Unknown path."));
+			return;
+		}
+		
 		let mock = [];
 		if (currentPath === "/") {
 			mock = [
-				"bin",
-				"etc",
-				"opt",
-				"var"
-			];
+				["/bin/", "bin"],
+				["/etc/", "etc"],
+				["/opt/", "opt"],
+				["/var/", "var"]			];
 		} else if (currentPath === "/opt" || currentPath === "/opt/") {
 			mock = [
-				"apache",
-				"zwagah",
-				"puppet"
+				["/", ".."],
+				["/opt/apache/", "apache"],
+				["/opt/zwagah/", "zwagah"],
+				["/opt/puppet/", "puppet"]
 			];
 		} else if (currentPath === "/opt/zwagah" || currentPath === "/opt/zwagah/") {
 			mock = [
-				"bin",
-				"etc",
-				"www",
-				"src"
+				["/opt/", ".."],
+				["/opt/zwagah/bin/", "bin"],
+				["/opt/zwagah/etc/", "etc"],
+				["/opt/zwagah/www/", "www"],
+				["/opt/zwagah/src/", "src"],
+				["/opt/zwagah/aaaaaaaaaaaaaaaaaaaaaaaaa/", "aaaaaaaaaaaaaaaaaaaaaaaaa"],
+				["/opt/zwagah/1/", "1"],
+				["/opt/zwagah/2/", "2"],
+				["/opt/zwagah/3/", "3"],
+				["/opt/zwagah/4/", "4"],
+				["/opt/zwagah/5/", "5"],
+				["/opt/zwagah/6/", "6"],
+				["/opt/zwagah/7/", "7"]
 			];
 		}
 		setTimeout(() => { resolve(mock); }, 1500);
